@@ -268,8 +268,21 @@
                                 </template>
 
                                 <template x-for="(step, idx) in workspace" :key="idx">
-                                    <div class="relative size-14 aspect-square rounded-2xl font-black text-xs flex flex-col items-center justify-center p-1 shadow-md animate-fadeIn transition-all hover:scale-105 border shrink-0"
+                                    <div class="relative size-14 aspect-square rounded-2xl font-black text-xs flex flex-col items-center justify-center p-1 shadow-md animate-fadeIn transition-all hover:scale-105 border shrink-0 cursor-grab active:cursor-grabbing"
+                                         :draggable="!hasFinished && !isExecuting"
+                                         @dragstart="draggedIndex = idx; $event.dataTransfer.effectAllowed = 'move'"
+                                         @dragover.prevent="$event.dataTransfer.dropEffect = 'move'"
+                                         @drop.prevent="
+                                             if (draggedIndex !== null && draggedIndex !== idx) {
+                                                 let moved = workspace[draggedIndex];
+                                                 workspace.splice(draggedIndex, 1);
+                                                 workspace.splice(idx, 0, moved);
+                                             }
+                                             draggedIndex = null;
+                                         "
+                                         @dragend="draggedIndex = null"
                                          :class="{
+                                            'opacity-40 scale-95 border-dashed ring-2 ring-white/50': draggedIndex === idx,
                                             'bg-emerald-500 text-white border-emerald-400': step === 'FORWARD',
                                             'bg-blue-500 text-white border-blue-400': step === 'TURN_LEFT',
                                             'bg-purple-500 text-white border-purple-400': step === 'TURN_RIGHT',
@@ -584,6 +597,7 @@
                         gridSize: 5,
                         targetSteps: 10,
                         workspace: [],
+                        draggedIndex: null,
                         isExecuting: false,
                         debugMessage: '',
                         showReflectionModal: false,
