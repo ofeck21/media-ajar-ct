@@ -41,12 +41,8 @@ class Game extends Component
         }
 
         $this->session = $activeSession;
-        if ($this->session->status === 'playing' && $this->session->started_at) {
-            $elapsed = now()->timestamp - $this->session->started_at->timestamp;
-            $this->initialElapsed = $elapsed > 0 ? $elapsed : 0;
-        } else {
-            $this->initialElapsed = 0;
-        }
+        // Waktu dihitung dari 0 sejak siswa membuka halaman permainan (tiap siswa punya waktunya sendiri)
+        $this->initialElapsed = 0;
 
         $this->loadStudentData();
     }

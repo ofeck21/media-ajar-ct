@@ -151,10 +151,12 @@
                              x-data="{ 
                                  remaining: {{ $this->remainingTime }},
                                  init() {
-                                     // Prevent immediate timeout on page load to debug timezone issues
-                                     // if (this.remaining === 0) {
-                                     //     this.$dispatch('session-timeout');
-                                     // }
+                                     if (this.remaining <= 0) {
+                                         // Dispatch slightly later to ensure Alpine is fully initialized
+                                         setTimeout(() => {
+                                            this.$dispatch('session-timeout');
+                                         }, 500);
+                                     }
                                      this.timer = setInterval(() => {
                                          if(this.remaining > 0) {
                                              this.remaining--;
@@ -301,8 +303,8 @@
                             </div>
                         </div>
 
-                    <!-- Banner Jika Sudah Finished -->
-                    <template x-if="hasFinished">
+                    <!-- Banner Jika Sudah Finished (Sukses) -->
+                    <template x-if="hasFinished && finishStatus !== 'timeout'">
                         <div class="bg-gradient-to-r from-emerald-600 to-teal-700 text-white rounded-3xl p-6 shadow-xl border border-white/20 mb-6 space-y-4 text-left">
                             <div class="flex items-center justify-between gap-4 border-b border-white/20 pb-3">
                                 <div class="flex items-center gap-3">
@@ -337,6 +339,26 @@
                                 <div>
                                     <span class="text-emerald-200 block text-[10px] uppercase font-bold">🧩 Pilar CT</span>
                                     <span class="font-bold text-yellow-300 text-xs truncate block" x-text="selectedPillar"></span>
+                                </div>
+                            </div>
+                        </div>
+                    </template>
+
+                    <!-- Banner Jika Timeout (Waktu Habis) -->
+                    <template x-if="hasFinished && finishStatus === 'timeout'">
+                        <div class="bg-gradient-to-r from-red-600 to-rose-700 text-white rounded-3xl p-6 shadow-xl border border-white/20 mb-6 space-y-4 text-left">
+                            <div class="flex items-center justify-between gap-4 border-b border-white/20 pb-3">
+                                <div class="flex items-center gap-3">
+                                    <div class="bg-white/20 p-3 rounded-2xl backdrop-blur-md text-3xl">⏱️</div>
+                                    <div>
+                                        <h3 class="text-lg font-black flex items-center gap-2">
+                                            <span>Waktu Habis!</span>
+                                        </h3>
+                                        <p class="text-xs text-red-100 font-medium">Misi telah berakhir sebelum kamu sempat menyelesaikannya.</p>
+                                    </div>
+                                </div>
+                                <div class="bg-white/20 backdrop-blur-md px-3.5 py-1.5 rounded-full font-black text-xs border border-white/30 shrink-0">
+                                    ❌ TIMEOUT
                                 </div>
                             </div>
                         </div>
@@ -398,8 +420,8 @@
 
                 </div>
 
-                <!-- Misi Selesai Banner (Muncul setelah selesai) -->
-                <template x-if="hasFinished">
+                <!-- Misi Selesai Banner (Muncul setelah selesai dengan sukses) -->
+                <template x-if="hasFinished && finishStatus !== 'timeout'">
                     <div class="bg-gradient-to-r from-emerald-50 to-teal-50 dark:from-emerald-950/40 dark:to-teal-950/40 border-2 border-emerald-500 rounded-3xl p-6 sm:p-8 shadow-xl flex flex-col items-center justify-center text-center animate-fadeIn space-y-3">
                         <div class="size-16 bg-emerald-500 text-white rounded-full flex items-center justify-center shadow-lg">
                             <flux:icon.check-badge class="size-10" />
@@ -556,6 +578,7 @@
                         return {
                         level: level || 'Basic',
                         hasFinished: @json($hasFinished),
+                        finishStatus: @json($existingResult ? $existingResult->status : null),
                         existingResult: @json($existingResult?->reflections),
                         savedResultInfo: @json($existingResult),
                         gridSize: 5,
@@ -921,6 +944,7 @@
                         submitReflection() {
                             this.showReflectionModal = false;
                             this.hasFinished = true; // Langsung tampilkan banner Misi Selesai di klien
+                            this.finishStatus = 'finished';
                             
                             Livewire.find(this.$root.closest('[wire\\:id]').getAttribute('wire:id')).call('saveGameResult', this.earnedStars, this.executedSteps, {
                                 emotion: this.selectedEmotion,
@@ -948,6 +972,7 @@
                         handleTimeout() {
                             if (this.hasFinished) return;
                             this.hasFinished = true;
+                            this.finishStatus = 'timeout';
                             this.earnedStars = 0;
                             this.totalPoints = this.basePoints + this.loopBonus;
                             
