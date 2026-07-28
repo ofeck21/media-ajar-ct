@@ -93,11 +93,11 @@ class Game extends Component
         $diagResult = $user->diagnosticResults()->where('game_session_id', $this->session->id)->first();
         $this->studentLevel = $diagResult->level ?? 'Basic';
 
-        // Check if student has already finished the game
+        // Check if student has already finished the game (reflections is not null)
         $this->existingResult = StudentResult::where('game_session_id', $this->session->id)
             ->where('student_id', $user->id)
             ->first();
-        $this->hasFinished = !is_null($this->existingResult);
+        $this->hasFinished = $this->existingResult && !is_null($this->existingResult->reflections);
         
         \Log::info("GameProp: hasFinished={$this->hasFinished}, session_id={$this->session->id}, student_id={$user->id}, existingResult=".($this->existingResult ? 'YES' : 'NO'));
     }
@@ -109,6 +109,7 @@ class Game extends Component
         // Enforce 1 time finish per student per session
         $alreadyFinished = StudentResult::where('game_session_id', $this->session->id)
             ->where('student_id', $user->id)
+            ->whereNotNull('reflections')
             ->exists();
 
         if ($alreadyFinished) {
@@ -121,18 +122,22 @@ class Game extends Component
         $earnedPoints = (int) ($reflectionsData['total_points'] ?? ($stars * 100));
         $durationSec = (int) ($reflectionsData['duration_seconds'] ?? 0);
 
-        // Simpan hasil permainan
-        StudentResult::create([
-            'game_session_id' => $this->session->id,
-            'student_id' => $user->id,
-            'student_group_id' => $this->group?->id,
-            'diagnostic_level' => $this->studentLevel,
-            'total_stars' => $stars,
-            'total_steps' => $steps,
-            'total_attempts' => $attempts,
-            'status' => $status,
-            'reflections' => $reflectionsData,
-        ]);
+        // Update hasil permainan yang sudah ada (dari diagnostic test) atau buat baru
+        StudentResult::updateOrCreate(
+            [
+                'game_session_id' => $this->session->id,
+                'student_id' => $user->id,
+            ],
+            [
+                'student_group_id' => $this->group?->id,
+                'diagnostic_level' => $this->studentLevel,
+                'total_stars' => $stars,
+                'total_steps' => $steps,
+                'total_attempts' => $attempts,
+                'status' => $status,
+                'reflections' => $reflectionsData,
+            ]
+        );
 
         // Tambahkan Poin Kelompok di DB (+ Total Poin)
         if ($this->group) {

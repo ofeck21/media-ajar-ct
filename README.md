@@ -54,3 +54,70 @@ Diangkat dari latar belakang dan rutinitas santri di kompleks pondok pesantren, 
 * PHP >= 8.3
 * Composer >= 2.x
 * Node.js & NPM
+
+---
+
+## 💻 Instalasi & Menjalankan Aplikasi Lokal
+
+Ikuti langkah-langkah di bawah ini untuk menginstal dan menjalankan proyek secara lokal:
+
+1. **Clone repositori ini:**
+   ```bash
+   git clone <URL_REPOSITORY_ANDA>
+   cd game-media-ajar
+   ```
+
+2. **Instal dependensi PHP (Composer):**
+   ```bash
+   composer install
+   ```
+
+3. **Instal dependensi JavaScript (NPM):**
+   ```bash
+   npm install
+   ```
+
+4. **Siapkan konfigurasi `.env`:**
+   Salin file `.env.example` menjadi `.env`.
+   ```bash
+   cp .env.example .env
+   ```
+
+5. **Generate Application Key:**
+   ```bash
+   php artisan key:generate
+   ```
+
+6. **Konfigurasi Database:**
+   Secara default, Laravel 11+ menggunakan SQLite. Jika Anda ingin menggunakan database MySQL atau PostgreSQL, sesuaikan koneksi `DB_CONNECTION` pada file `.env`. 
+   
+   Jalankan migrasi beserta *seeder* awal (untuk membuat akun *superadmin*, dsb):
+   ```bash
+   php artisan migrate --seed
+   ```
+
+7. **Build Aset Frontend (Tailwind/Flux):**
+   ```bash
+   npm run build
+   # atau untuk mode development: npm run dev
+   ```
+
+8. **Jalankan Development Server:**
+   ```bash
+   php artisan serve
+   ```
+   Aplikasi sekarang dapat diakses melalui browser di alamat: `http://localhost:8000`
+
+---
+
+## 👥 Hak Akses (Roles) Default
+
+Saat menjalankan `php artisan migrate --seed`, sistem akan membuatkan beberapa akun utama:
+- **Superadmin:** `superadmin@ctquest.test` / Password: `password`
+- **Guru:** Dapat didaftarkan oleh Superadmin atau melalui halaman registrasi.
+- **Siswa:** Dibuat otomatis (*generate*) oleh Guru di dalam pengaturan Kelas.
+
+---
+
+## 📄 Lisensi
+CT Quest dikembangkan untuk keperluan pendidikan dan dilisensikan di bawah [MIT License](https://opensource.org/licenses/MIT). Silakan modifikasi dan gunakan secara bebas untuk kemajuan pendidikan di Indonesia.
