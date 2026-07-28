@@ -31,6 +31,10 @@ class SessionShow extends Component
 
     public function generateGroups()
     {
+        if (in_array($this->session->status, ['playing', 'finished'])) {
+            return;
+        }
+
         $this->validate([
             'groupCount' => 'required|integer|min:1|max:20',
             'strategy' => 'required|in:heterogeneous,homogeneous',
@@ -270,6 +274,10 @@ class SessionShow extends Component
 
     public function moveStudent($studentId, $fromGroupId, $toGroupId)
     {
+        if (in_array($this->session->status, ['playing', 'finished'])) {
+            return;
+        }
+
         DB::transaction(function () use ($studentId, $fromGroupId, $toGroupId) {
             if ($fromGroupId) {
                 $from = StudentGroup::find($fromGroupId);

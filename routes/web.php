@@ -30,13 +30,11 @@ Route::middleware(['auth'])->group(function () {
     });
 
     Route::middleware(['role:teacher'])->prefix('teacher')->name('teacher.')->group(function () {
+        Route::livewire('/', App\Livewire\Teacher\Dashboard::class)->name('dashboard');
         Route::livewire('/classrooms', App\Livewire\Teacher\ClassroomIndex::class)->name('classrooms.index');
         Route::livewire('/classrooms/{classroom}', App\Livewire\Teacher\ClassroomShow::class)->name('classrooms.show');
         Route::livewire('/students', App\Livewire\Teacher\StudentIndex::class)->name('students.index');
         Route::livewire('/sessions/{session}', App\Livewire\Teacher\SessionShow::class)->name('sessions.show');
-        Route::get('/', function () {
-            return redirect()->route('teacher.classrooms.index');
-        })->name('dashboard');
     });
 
     Route::middleware(['role:student'])->prefix('student')->name('student.')->group(function () {

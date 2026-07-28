@@ -58,11 +58,11 @@
             @elseif($session->status === 'playing')
                 <flux:button variant="danger" icon="stop" wire:click="stopSession">Hentikan Sesi</flux:button>
                 <flux:button variant="primary" icon="film" wire:click="openAllGroupsReplay" class="bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white font-black shadow-lg">
-                    🎬 Putar Replay Serentak
+                    🎬 Putar Ulang Serentak
                 </flux:button>
             @elseif($session->status === 'finished')
                 <flux:button variant="primary" icon="film" wire:click="openAllGroupsReplay" class="bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white font-black shadow-lg">
-                    🎬 Putar Replay Serentak
+                    🎬 Putar Ulang Serentak
                 </flux:button>
             @endif
         </div>
@@ -307,6 +307,7 @@
                     <div class="space-y-2 min-h-[50px] p-2 -m-2 rounded-lg transition-colors border-2 border-transparent"
                          x-data="{
                             init() {
+                                @if(!in_array($session->status, ['playing', 'finished']))
                                 if (typeof Sortable !== 'undefined') {
                                     Sortable.create(this.$el, {
                                         group: 'students',
@@ -323,6 +324,7 @@
                                         }
                                     });
                                 }
+                                @endif
                             }
                          }"
                          data-group="{{ $group->id }}">
@@ -413,7 +415,7 @@
 
                                     <!-- Replay Button -->
                                     <button type="button" wire:click="openReplay({{ $student->id }})" class="w-full mt-1 bg-emerald-50 hover:bg-emerald-100 dark:bg-emerald-950/50 dark:hover:bg-emerald-900/80 text-emerald-700 dark:text-emerald-300 font-extrabold text-[11px] py-1.5 px-3 rounded-xl border border-emerald-200 dark:border-emerald-800 transition-all flex items-center justify-center gap-1.5 cursor-pointer shadow-sm active:scale-95">
-                                        <span>🎬 Putar Replay ({{ $attemptsCount }} Percobaan)</span>
+                                        <span>🎬 Putar Ulang</span>
                                     </button>
                                 @endif
                             </div>
@@ -512,7 +514,7 @@
                 <!-- Playback Action Buttons -->
                 <div class="flex items-center gap-2 pt-2">
                     <button type="button" @click="startReplay()" :disabled="isPlaying || workspace.length === 0" class="flex-1 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white font-extrabold py-3 rounded-2xl shadow-md transition-all flex items-center justify-center gap-2 text-xs disabled:opacity-40 cursor-pointer">
-                        <span>▶️ Putar Replay</span>
+                        <span>▶️ Putar Ulang</span>
                     </button>
 
                     <button type="button" @click="resetReplay()" :disabled="isPlaying" class="bg-zinc-200 dark:bg-zinc-700 hover:bg-zinc-300 text-zinc-800 dark:text-white font-extrabold px-4 py-3 rounded-2xl transition-all flex items-center justify-center gap-1.5 text-xs disabled:opacity-40 cursor-pointer">
@@ -1071,4 +1073,100 @@
             };
         }
     </script>
+
+    <!-- ========================================================= -->
+    <!-- CETAK PDF JURNAL REFLEKSI (Hanya terlihat saat Print)     -->
+    <!-- ========================================================= -->
+    <style>
+        @media print {
+            body * {
+                visibility: hidden;
+            }
+            #print-section, #print-section * {
+                visibility: visible;
+            }
+            #print-section {
+                position: absolute;
+                left: 0;
+                top: 0;
+                width: 100%;
+                padding: 10px;
+            }
+            .print-grid {
+                display: grid;
+                grid-template-columns: repeat(2, 1fr);
+                gap: 20px;
+            }
+            .print-card {
+                border: 2px solid #e4e4e7;
+                border-radius: 12px;
+                padding: 16px;
+                page-break-inside: avoid;
+                background-color: #fafafa !important;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+        }
+    </style>
+
+    <div id="print-section" class="hidden print:block w-full bg-white">
+        <div class="text-center mb-8">
+            <h1 class="text-3xl font-black text-emerald-800">Jurnal Refleksi Siswa (PSE & CT)</h1>
+            <p class="text-lg text-zinc-600 font-bold mt-1">
+                Sesi: {{ $session->name }} | Kelas: {{ $session->classroom->name }}
+            </p>
+        </div>
+
+        <div class="print-grid">
+            @foreach($students->sortBy('name') as $student)
+                @php
+                    $lastRes = $student->results->last();
+                    $reflections = $lastRes?->reflections ?? [];
+                    $emotion = $reflections['emotion'] ?? '-';
+                    $pillar = $reflections['pillar'] ?? '-';
+                    $duration = $reflections['duration_seconds'] ?? '-';
+                    $points = $reflections['total_points'] ?? ($lastRes ? $lastRes->total_stars * 100 : 0);
+                    $groupName = $groups->first(fn($g) => $g->students->contains('id', $student->id))?->name ?? '-';
+                @endphp
+                <div class="print-card">
+                    <!-- Card Header -->
+                    <div class="flex items-start justify-between border-b border-zinc-200 pb-3 mb-4">
+                        <div>
+                            <h3 class="font-black text-xl text-zinc-800">{{ $student->name }}</h3>
+                            <div class="text-sm font-bold text-zinc-500 mt-0.5">Kelompok: {{ $groupName }}</div>
+                        </div>
+                        <span class="text-[11px] font-black uppercase tracking-wider bg-emerald-100 text-emerald-700 px-3 py-1.5 rounded-lg border border-emerald-200">
+                            {{ $student->diagnosticResults->first()?->level ?? 'Basic' }}
+                        </span>
+                    </div>
+                    
+                    <!-- Card Body -->
+                    <div class="grid grid-cols-2 gap-3 text-sm">
+                        <div class="bg-white p-2.5 rounded-lg border border-zinc-200">
+                            <span class="block text-[10px] text-zinc-400 uppercase font-black tracking-wider mb-1">Poin Akhir</span>
+                            <strong class="text-base text-emerald-600">{{ number_format($points) }} PTS ⭐</strong>
+                        </div>
+                        <div class="bg-white p-2.5 rounded-lg border border-zinc-200">
+                            <span class="block text-[10px] text-zinc-400 uppercase font-black tracking-wider mb-1">Durasi</span>
+                            <strong class="text-base text-blue-600">{{ $duration }} Detik</strong>
+                        </div>
+                        <div class="bg-white p-2.5 rounded-lg border border-zinc-200">
+                            <span class="block text-[10px] text-zinc-400 uppercase font-black tracking-wider mb-1">Emosi (PSE)</span>
+                            <strong class="text-base text-zinc-800">{{ $emotion }}</strong>
+                        </div>
+                        <div class="bg-white p-2.5 rounded-lg border border-zinc-200">
+                            <span class="block text-[10px] text-zinc-400 uppercase font-black tracking-wider mb-1">Pilar CT</span>
+                            <strong class="text-base text-amber-600">{{ $pillar }}</strong>
+                        </div>
+                    </div>
+                    
+                    <!-- Card Footer -->
+                    <div class="mt-4 pt-3 border-t border-zinc-200 text-xs font-bold text-zinc-500 flex justify-between items-center">
+                        <span>Percobaan: {{ $lastRes?->total_attempts ?? 0 }}x main</span>
+                        <span class="text-zinc-400">{{ $lastRes && $lastRes->created_at ? $lastRes->created_at->format('d/m/Y H:i') : 'Belum bermain' }}</span>
+                    </div>
+                </div>
+            @endforeach
+        </div>
+    </div>
 </div>

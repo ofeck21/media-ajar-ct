@@ -142,7 +142,7 @@
 
                             <!-- Action Playback Button -->
                             <button type="button" wire:click="openReplay({{ $res->id }})" class="w-full bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white font-extrabold text-xs py-2.5 px-3 rounded-xl transition-all flex items-center justify-center gap-1.5 cursor-pointer shadow-md hover:shadow-lg active:scale-95">
-                                <span>🎬 Putar Replay Permainan Ini</span>
+                                <span>🎬 Putar Ulang Permainan Ini</span>
                             </button>
                         </div>
                     @endforeach
@@ -246,7 +246,7 @@
                 <!-- Playback Action Buttons -->
                 <div class="flex items-center gap-2 pt-2">
                     <button type="button" @click="startReplay()" :disabled="isPlaying || workspace.length === 0" class="flex-1 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white font-extrabold py-3 rounded-2xl shadow-md transition-all flex items-center justify-center gap-2 text-xs disabled:opacity-40 cursor-pointer">
-                        <span>▶️ Putar Replay</span>
+                        <span>▶️ Putar Ulang</span>
                     </button>
 
                     <button type="button" @click="resetReplay()" :disabled="isPlaying" class="bg-zinc-200 dark:bg-zinc-700 hover:bg-zinc-300 text-zinc-800 dark:text-white font-extrabold px-4 py-3 rounded-2xl transition-all flex items-center justify-center gap-1.5 text-xs disabled:opacity-40 cursor-pointer">
