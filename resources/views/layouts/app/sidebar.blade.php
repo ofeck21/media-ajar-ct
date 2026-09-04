@@ -18,7 +18,9 @@
                         </div>
                     </div>
 
-                    <div class="flex items-center gap-4">
+                    <div class="flex items-center gap-3 sm:gap-4">
+                        <x-fullscreen-button variant="student" />
+
                         <div class="flex items-center gap-2 bg-white/10 backdrop-blur-md px-3 py-1.5 rounded-full border border-white/20">
                             <flux:avatar :name="auth()->user()->name" size="xs" class="ring-2 ring-white/50" />
                             <span class="text-xs font-semibold text-white">{{ auth()->user()->name }}</span>
@@ -42,6 +44,7 @@
             <flux:sidebar sticky collapsible="mobile" class="border-e border-zinc-200 bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-900">
                 <flux:sidebar.header>
                     <x-app-logo :sidebar="true" href="{{ route('dashboard') }}" wire:navigate />
+                    <x-fullscreen-button class="hidden lg:inline-flex ms-auto me-1" />
                     <flux:sidebar.collapse class="lg:hidden" />
                 </flux:sidebar.header>
 
@@ -84,6 +87,8 @@
                 <flux:sidebar.toggle class="lg:hidden" icon="bars-2" inset="left" />
 
                 <flux:spacer />
+
+                <x-fullscreen-button class="me-2" />
 
                 <flux:dropdown position="top" align="end">
                     <flux:profile

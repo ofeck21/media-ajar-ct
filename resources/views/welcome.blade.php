@@ -11,6 +11,7 @@
         <link rel="apple-touch-icon" href="/apple-touch-icon.png">
 
         @fonts
+        @vite(['resources/css/app.css', 'resources/js/app.js'])
 
         <!-- Styles -->
         <style>
@@ -21,6 +22,7 @@
         <header class="w-full lg:max-w-4xl max-w-[335px] text-sm mb-6 not-has-[nav]:hidden">
             @if (Route::has('login'))
                 <nav class="flex items-center justify-end gap-4">
+                    <x-fullscreen-button />
                     @auth
                         <a
                             href="{{ route('dashboard') }}"

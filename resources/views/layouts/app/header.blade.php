@@ -41,6 +41,7 @@
                 </flux:tooltip>
             </flux:navbar>
 
+            <x-fullscreen-button class="me-2" />
             <x-desktop-user-menu />
         </flux:header>
 
